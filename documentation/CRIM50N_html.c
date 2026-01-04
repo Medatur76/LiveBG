@@ -16,10 +16,7 @@
 #include "headers/font_8x16.h"
 #endif
 
-#ifndef CONNOR
-#define CONNOR gay
 #include <time.h>
-#endif
 
 const unsigned char overridefontdata_8x16[];
 

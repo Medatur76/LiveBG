@@ -296,7 +296,7 @@ int runWindow() {
             surface,
             NULL,
             ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM,
-            "[name-here]");
+            "livebg");
     zwlr_layer_surface_v1_add_listener(layer_surface,
                                        &layer_listener,
                                        NULL);

@@ -8,9 +8,10 @@ To double-check everything, make sure that your projects contains these files fr
 ├── headers/
 │   ├── font_8x16.h
 │   ├── layer-shell-unstable-v1-client-protocol.h
-│   ├── window_handler.h
+│   ├── liveBG.h
 │   └── xdg-shell-client-protocol.h
 ├── include/
+│   ├── drawing_utils.c
 │   ├── font_8x16.c
 │   ├── layer-shell-unstable-v1-protocol.c
 │   ├── window_handler.c
@@ -26,9 +27,9 @@ First is a single import that allows your whole project to work.
 
 Inside your ``main.c`` you must have:
 ```C
-#ifndef WINDOW_HANDLER
-#define WINDOW_HANDLER
-#include "headers/window_handler.h"
+#ifndef LIVEBG
+#define LIVEBG
+#include "headers/liveBG.h"
 #endif
 ```
 This allows us to get all the functions required for the generation and manipulation of the background window.  

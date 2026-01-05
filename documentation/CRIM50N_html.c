@@ -1,19 +1,6 @@
-#ifndef DEFAULT_IMPORTS
-#define DEFAULT_IMPORTS
-#include <wayland-client.h>
-#include "headers/layer-shell-unstable-v1-client-protocol.h"
-#include <stdlib.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
-
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-
-#include "headers/window_handler.h"
-#include "headers/font_8x16.h"
+#ifndef LIVEBG
+#define LIVEBG
+#include "headers/liveBG.h"
 #endif
 
 #include <time.h>
@@ -62,7 +49,7 @@ void draw_text_checkpoint(int x, int y, const unsigned char *s, struct Color col
             } else if (s[i] == 0x80 && s[i+1] == 0xBE) {
                 draw_override(cx, cy, 1, color, current);
             } else if (s[i] == 0x94 && s[i+1] == 0x82) {
-                draw_char(cx, cy, 0xB3, color, current);
+                drawChar(cx, cy, 0xB3, color, current);
             } else if (s[i] == 0x95 && s[i+1] == 0xAe) {
                 draw_override(cx, cy, 2, color, current);
             } else if (s[i] == 0x94 && s[i+1] == 0x8C) {
@@ -98,11 +85,11 @@ void draw_text_checkpoint(int x, int y, const unsigned char *s, struct Color col
             } else if (s[i] == 0x94 && s[i+1] == 0x91) {
                 draw_override(cx, cy, 18, color, current);
             } else {
-                draw_char(cx, cy, s[--i], color, current);
+                drawChar(cx, cy, s[--i], color, current);
                 i--;
             }
             i++;
-        } else draw_char(cx, cy, s[i], color, current);
+        } else drawChar(cx, cy, s[i], color, current);
         cx += FONT_W;
     }
 }

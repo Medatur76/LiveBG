@@ -1,10 +1,9 @@
-#ifndef DEFAULT_IMPORTS
-#define DEFAULT_IMPORTS
 #include <wayland-client.h>
 #include "layer-shell-unstable-v1-client-protocol.h"
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <math.h>
 #include <string.h>
 
 #include <unistd.h>
@@ -13,7 +12,6 @@
 #include <sys/stat.h>
 
 #include "font_8x16.h"
-#endif
 
 struct Color {
     int A;
@@ -51,6 +49,9 @@ extern char* format(size_t, const char *__restrict, ...);
 
 extern struct Size getCurrent();
 
-extern void draw_char(int, int, char, struct Color, struct Size);
-extern void draw_text(int, int, const unsigned char*, struct Color, struct Size);
+extern void drawChar(int, int, char, struct Color, struct Size);
+extern void drawText(int, int, const unsigned char*, struct Color, struct Size);
+extern void drawRect(int, int, int, int, struct Color, struct Size);
+extern void drawCircle(int, int, double, struct Color, struct Size);
+
 extern int runWindow();

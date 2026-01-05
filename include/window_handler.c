@@ -1,8 +1,8 @@
 #define _POSIX_C_SOURCE 200112L
 
-#ifndef WINDOW_HANDLER
-#define WINDOW_HANDLER
-#include "../headers/window_handler.h"
+#ifndef LIVEBG
+#define LIVEBG
+#include "../headers/liveBG.h"
 #endif
 
 Pixel background = {0xFF,0x00,0x00,0x00};
@@ -27,8 +27,7 @@ struct wl_seat* seat;
 struct wl_keyboard* kb;
 uint8_t* pixel;
 struct Size n = {1920, 1080}, f = {1920, 1080};
-int configured = 0;
-uint8_t cls, fullscrn;
+uint8_t cls, fullscrn, configured;
 
 struct Size getCurrent() {
     return fullscrn ? f : n;
@@ -56,7 +55,7 @@ char* format(size_t maxlen, const char *__restrict format, ...) {
     return out;
 }
 
-int32_t alocated_sharedMemory(uint64_t size) {
+int32_t __alocated_sharedMemory(uint64_t size) {
     int8_t name[8];
     name[0] = '/';
     name[7] = 0;
@@ -69,11 +68,11 @@ int32_t alocated_sharedMemory(uint64_t size) {
     return fd;
 }
 
-void resize() {
+void __resize() {
     struct Size c = getCurrent();
     zwlr_layer_surface_v1_set_size(layer_surface, c.w, c.h);
 
-    int32_t fd = alocated_sharedMemory(c.w * c.h * 4);
+    int32_t fd = __alocated_sharedMemory(c.w * c.h * 4);
 
     pixel = mmap(0, c.w * c.h * 4, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
@@ -83,52 +82,7 @@ void resize() {
     close(fd);
 }
 
-void draw_char(int x, int y, char c, struct Color color, struct Size current) {
-    const int fw = 8;   /* expected: 8 */
-    const int fh = 16;  /* expected: 16 */
-
-    /* Clamp to available glyphs */
-    if (c >= 256)
-        return;
-    
-    for (int row = 0; row < fh; row++) {
-        /* One byte = one horizontal row of 8 pixels */
-        uint8_t row_bits =
-            fontdata_8x16[(unsigned char)c * fh + row];
-
-        for (int col = 0; col < fw; col++) {
-            /* MSB-first: leftmost pixel is bit 7 */
-            if (row_bits & 0x80) {
-                int px = x + col;
-                int py = y + row;
-
-                if ((unsigned)px < (unsigned)current.w &&
-                    (unsigned)py < (unsigned)current.h) {
-
-                    int i = (py * current.w + px) * 4;
-                    pixel[i + 0] = color.B;  /* B */
-                    pixel[i + 1] = color.G;  /* G */
-                    pixel[i + 2] = color.R;  /* R */
-                    pixel[i + 3] = color.A;  /* A */
-                }
-            }
-            row_bits <<= 1;
-        }
-    }
-}
-
-void draw_text(int x, int y, const unsigned char *s, struct Color color, struct Size current) {
-    int cx = x, cy = y;
-    for (size_t i = 0; s[i]; i++) {
-        if (s[i] == 0x0A) {
-            cy += FONT_H;
-            cx = x - FONT_W;
-        } else draw_char(cx, cy, s[i], color, current);
-        cx += FONT_W;
-    }
-}
-
-void draw() {
+void __draw() {
     struct Size c = getCurrent();
     size_t pixel_count = c.w * c.h * 4;
     for (size_t i = 0; i < pixel_count; i+=4) {
@@ -137,12 +91,6 @@ void draw() {
         pixel[i+2] = background.R;
         pixel[i+3] = background.A;
     }
-
-
-    /*update_logs();
-    draw_logs(c);
-    draw_clock(c.w * 0.45, c.h * 0.15, c);
-    draw_black_hole(c);*/
 
     for (size_t i = 0; i < rEvent.count; i++) {
         rEvent.listeners[i](c);
@@ -155,19 +103,19 @@ void draw() {
 
 struct wl_callback_listener cb_list;
 
-void frame_new(void* data, struct wl_callback* cb, uint32_t cb_data) {
+void __frame_new(void* data, struct wl_callback* cb, uint32_t cb_data) {
     wl_callback_destroy(cb);
     cb = wl_surface_frame(surface);
     wl_callback_add_listener(cb, &cb_list, 0);
 
-    draw();
+    __draw();
 }
 
 struct wl_callback_listener cb_list = {
-    .done = frame_new
+    .done = __frame_new
 };
 
-void layer_configure(void *data, struct zwlr_layer_surface_v1 *surface, uint32_t serial, uint32_t nw, uint32_t nh) {
+void __layer_configure(void *data, struct zwlr_layer_surface_v1 *surface, uint32_t serial, uint32_t nw, uint32_t nh) {
     zwlr_layer_surface_v1_ack_configure(surface, serial);
 
     if (!nw && !nh) return;
@@ -179,68 +127,68 @@ void layer_configure(void *data, struct zwlr_layer_surface_v1 *surface, uint32_t
         munmap(pixel, current.w * current.h * 4);
         n.w = nw;
         n.h = nh;
-        resize();
+        __resize();
     }
 
     configured = 1;
 }
 
-void layer_closed(void *data, struct zwlr_layer_surface_v1 *surface) {
+void __layer_closed(void *data, struct zwlr_layer_surface_v1 *surface) {
     (void)data;
     (void)surface;
 }
 
 struct zwlr_layer_surface_v1_listener layer_listener = {
-    .configure = layer_configure,
-    .closed = layer_closed
+    .configure = __layer_configure,
+    .closed = __layer_closed
 };
 
-void kb_map(void* data, struct wl_keyboard* kb, uint32_t frmt, int32_t fd, uint32_t sz) {}
+void __kb_map(void* data, struct wl_keyboard* kb, uint32_t frmt, int32_t fd, uint32_t sz) {}
 
-void kb_enter(void* data, struct wl_keyboard* kb, uint32_t ser, struct wl_surface* srfc, struct wl_array *keys) {}
+void __kb_enter(void* data, struct wl_keyboard* kb, uint32_t ser, struct wl_surface* srfc, struct wl_array *keys) {}
 
-void kb_leave(void* data, struct wl_keyboard* kb, uint32_t ser, struct wl_surface* srfc) {}
+void __kb_leave(void* data, struct wl_keyboard* kb, uint32_t ser, struct wl_surface* srfc) {}
 
-void kb_key(void* data, struct wl_keyboard* kb, uint32_t ser, uint32_t t, uint32_t key, uint32_t state) {
+void __kb_key(void* data, struct wl_keyboard* kb, uint32_t ser, uint32_t t, uint32_t key, uint32_t state) {
     if (key == 1) cls = 1;
     else if (key == 87 && state) {
         fullscrn = !fullscrn;
-        resize();
+        __resize();
         printf("Fullscreen: %u\n", fullscrn);
     }
     else printf("%s:%u\n", state ? "Pressed" : "Released", key);
 }
 
-void kb_mod(void* data, struct wl_keyboard* kb, uint32_t ser, uint32_t dep, uint32_t lat, uint32_t lock, uint32_t group) {}
+void __kb_mod(void* data, struct wl_keyboard* kb, uint32_t ser, uint32_t dep, uint32_t lat, uint32_t lock, uint32_t group) {}
 
-void kb_rep(void* data, struct wl_keyboard* kb, int32_t rate, int32_t del) {}
+void __kb_rep(void* data, struct wl_keyboard* kb, int32_t rate, int32_t del) {}
 
 struct wl_keyboard_listener kb_list = {
-    .keymap = kb_map,
-    .enter = kb_enter,
-    .leave = kb_leave,
-    .key = kb_key,
-    .modifiers = kb_mod,
-    .repeat_info = kb_rep
+    .keymap = __kb_map,
+    .enter = __kb_enter,
+    .leave = __kb_leave,
+    .key = __kb_key,
+    .modifiers = __kb_mod,
+    .repeat_info = __kb_rep
 };
 
-void seat_cap(void* data, struct wl_seat* seat, uint32_t cap) {
+void __seat_cap(void* data, struct wl_seat* seat, uint32_t cap) {
     if (cap & WL_SEAT_CAPABILITY_KEYBOARD && !kb) {
         kb = wl_seat_get_keyboard(seat);
         wl_keyboard_add_listener(kb, &kb_list, 0);
     }
 }
 
-void seat_name(void* data, struct wl_seat* seat, const char* name) {}
+void __seat_name(void* data, struct wl_seat* seat, const char* name) {}
 
 struct wl_seat_listener seat_list = {
-    .capabilities = seat_cap,
-    .name = seat_name
+    .capabilities = __seat_cap,
+    .name = __seat_name
 };
 
-static void output_geometry(void *data, struct wl_output *output, int32_t x, int32_t y, int32_t physical_width, int32_t physical_height, int32_t subpixel, const char *make, const char *model, int32_t transform) {}
+static void __output_geometry(void *data, struct wl_output *output, int32_t x, int32_t y, int32_t physical_width, int32_t physical_height, int32_t subpixel, const char *make, const char *model, int32_t transform) {}
 
-static void output_mode(void *data, struct wl_output *output, uint32_t flags, int32_t width, int32_t height, int32_t refresh) {
+static void __output_mode(void *data, struct wl_output *output, uint32_t flags, int32_t width, int32_t height, int32_t refresh) {
     printf("Screen dimensions: %dx%d\n", width, height);
     f.w = (uint16_t)width;
     f.h = (uint16_t)height;
@@ -248,11 +196,11 @@ static void output_mode(void *data, struct wl_output *output, uint32_t flags, in
 
 // Listener structure to handle output events
 static const struct wl_output_listener output_listener = {
-    output_geometry,
-    output_mode,
+    __output_geometry,
+    __output_mode,
 };
 
-void registry_global(void* data, struct wl_registry* registry, uint32_t name, const char* interface, uint32_t version) {
+void __registry_global(void* data, struct wl_registry* registry, uint32_t name, const char* interface, uint32_t version) {
     if (!strcmp(interface, wl_output_interface.name)) {
         struct wl_output *output = wl_registry_bind(registry, name, &wl_output_interface, 1);
         wl_output_add_listener(output, &output_listener, 0);
@@ -268,13 +216,13 @@ void registry_global(void* data, struct wl_registry* registry, uint32_t name, co
     }
 }
 
-void registry_global_remove(void* data, struct wl_registry* reg, uint32_t name) {
+void __registry_global_remove(void* data, struct wl_registry* reg, uint32_t name) {
 
 }
 
 struct wl_registry_listener registry_listener = {
-    .global = registry_global,
-    .global_remove = registry_global_remove,
+    .global = __registry_global,
+    .global_remove = __registry_global_remove,
 };
 
 int runWindow() {
@@ -311,7 +259,6 @@ int runWindow() {
     zwlr_layer_surface_v1_set_exclusive_zone(layer_surface, -1);
     wl_surface_commit(surface);
 
-    /* Wait for initial configure */
     while (!configured)
         wl_display_dispatch(display);
 
@@ -320,7 +267,7 @@ int runWindow() {
     rEvent.count == tEvent.count == 0;
 
     printf("Configured!\n");
-    draw();
+    __draw();
     zwlr_layer_surface_v1_set_keyboard_interactivity(layer_surface, ZWLR_LAYER_SURFACE_V1_KEYBOARD_INTERACTIVITY_ON_DEMAND);
     
     while (wl_display_dispatch(display))

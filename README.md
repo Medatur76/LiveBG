@@ -16,6 +16,6 @@ _An automatic script will be made soon to simplify installation_
 It's recommended that you simply clone the entire repository. However, if you wish to copy files manually, you must copy the files from the include folder and headers folder.
 ## Documentation
 _How do I get started developing my own background?_  
-This repository is filled with documentation on how to make a working project and the various provided functions. You can find a list of them **[here](./documentation/list.md)** or start you development journey **[here]()**!
+This repository is filled with documentation on how to make a working project and the various provided functions. You can find a list of them **[here](./documentation/list.md)** or start you development journey **[here](./documentation/getting_started.md)**!
 ## License
 Idk man, just like put my name on it and were good :)

@@ -1,6 +1,6 @@
-#ifndef WINDOW_HANDLER
-#define WINDOW_HANDLER
-#include "headers/window_handler.h"
+#ifndef LIVEBG
+#define LIVEBG
+#include "headers/liveBG.h"
 #endif
 
 int main() {

@@ -68,4 +68,4 @@ void drawCircle(int cx, int cy, double r, struct Color color, struct Size size)
 ```
 Takes in the x and y position of the center of the circle, the radius, color, and current screen size. This function will then render a circle with the radius and color specified and centered at the ``cx`` and ``cy`` position.
 ## Congrats!
-At this time you've learned all there is to know! [Name here] is supposed to be as flexible as possible to your needs for it, hence why this tutorial is so short. If you would like to see a very complex example of a working background then go **[here](./CRIM50N_html.c)** (this file would replace ``main.c``). Happy coding!
+At this time you've learned all there is to know! LiveBG is supposed to be as flexible as possible to your needs for it, hence why this tutorial is so short. If you would like to see a very complex example of a working background then go **[here](./CRIM50N_html.c)** (this file would replace ``main.c``). Happy coding!

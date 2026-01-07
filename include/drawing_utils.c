@@ -10,6 +10,11 @@ void drawChar(int x, int y, char c, struct Color color, struct Size current) {
     if (c >= 256)
         return;
     
+    /* OPTIMIZATION: Pre-compute pixel values to avoid per-pixel calcs */
+    uint32_t pixel_value = (color.A << 24) | (color.R << 16) | (color.G << 8) | color.B;
+    uint32_t *pixel_ptr = (uint32_t *)pixel;
+    uint32_t pitch = current.w;
+    
     for (int row = 0; row < fh; row++) {
         uint8_t row_bits =
             fontdata_8x16[(unsigned char)c * fh + row];
@@ -20,12 +25,9 @@ void drawChar(int x, int y, char c, struct Color color, struct Size current) {
                 int cy = y + row;
 
                 if ((unsigned)cx < (unsigned)current.w && (unsigned)cy < (unsigned)current.h) {
-
-                    int i = (cy * current.w + cx) * 4;
-                    pixel[i + 0] = color.B;  /* B */
-                    pixel[i + 1] = color.G;  /* G */
-                    pixel[i + 2] = color.R;  /* R */
-                    pixel[i + 3] = color.A;  /* A */
+                    /* Direct 32-bit write instead of 4 byte writes */
+                    int i = cy * pitch + cx;
+                    pixel_ptr[i] = pixel_value;
                 }
             }
             row_bits <<= 1;
@@ -45,14 +47,18 @@ void drawText(int x, int y, const unsigned char *s, struct Color color, struct S
 }
 
 void drawRect(int x, int y, int w, int h, struct Color color, struct Size current) {
+    /* OPTIMIZATION: Pre-compute pixel value and use 32-bit writes */
+    uint32_t pixel_value = (color.A << 24) | (color.R << 16) | (color.G << 8) | color.B;
+    uint32_t *pixel_ptr = (uint32_t *)pixel;
+    uint32_t pitch = current.w;
+    unsigned int cw = (unsigned)current.w, ch = (unsigned)current.h;
+    
     for (int cy = y; cy < y + h; cy++) {
+        if ((unsigned)cy >= ch) continue;
         for (int cx = x; cx < x + w; cx++) {
-            if ((unsigned)cx < (unsigned)current.w && (unsigned)cy < (unsigned)current.h) {
-                int i = (cy * current.w + cx) * 4;
-                pixel[i + 0] = color.B;  /* B */
-                pixel[i + 1] = color.G;  /* G */
-                pixel[i + 2] = color.R;  /* R */
-                pixel[i + 3] = color.A;  /* A */
+            if ((unsigned)cx < cw) {
+                int i = cy * pitch + cx;
+                pixel_ptr[i] = pixel_value;
             }
         }
     }
